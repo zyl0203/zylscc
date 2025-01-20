@@ -1,0 +1,200 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日预算与支出管理</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2, h3 {
+            color: #333;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .no-data {
+            text-align: center;
+            color: #aaa;
+        }
+        input[type="file"], button {
+            margin: 10px auto;
+            display: block;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="file"] {
+            background-color: #007bff;
+            color: #fff;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>每日预算与支出管理</h2>
+        <input type="file" id="excelFileInput" accept=".xlsx">
+        
+        <div id="statistics">
+            <h3>统计信息</h3>
+            <p>总预算：<span id="totalBudget">0</span> 元</p>
+            <p>总支出：<span id="totalSpending">0</span> 元</p>
+            <p>状态：<span id="overallStatus">未超支</span></p>
+        </div>
+
+        <h3>每日数据</h3>
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>预算 (元)</th>
+                    <th>实际支出 (元)</th>
+                    <th>类别</th>
+                    <th>是否超支</th>
+                    <th>编辑操作</th>
+                </tr>
+            </thead>
+            <tbody id="dataTableBody">
+                <tr id="noDataRow">
+                    <td colspan="6" class="no-data">暂无数据，请上传文件</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>支出分布图</h3>
+        <canvas id="spendingChart" width="400" height="200"></canvas>
+
+        <button id="exportData">导出修改后的数据</button>
+    </div>
+
+    <script>
+        const excelFileInput = document.getElementById("excelFileInput");
+        const dataTableBody = document.getElementById("dataTableBody");
+        const totalBudgetEl = document.getElementById("totalBudget");
+        const totalSpendingEl = document.getElementById("totalSpending");
+        const overallStatusEl = document.getElementById("overallStatus");
+        const spendingChartCtx = document.getElementById("spendingChart").getContext("2d");
+        let spendingChart;
+
+        // 监听文件上传
+        excelFileInput.addEventListener("change", event => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = e => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                populateTable(rows.slice(1));
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        // 填充表格并计算统计信息
+        const populateTable = rows => {
+            let totalBudget = 0, totalSpending = 0;
+            const categoryData = {};
+
+            dataTableBody.innerHTML = ""; // 清空表格
+            rows.forEach(row => {
+                const [date, budget, spending, category] = row;
+                const isOverBudget = (spending || 0) > (budget || 0);
+
+                // 更新统计信息
+                totalBudget += budget || 0;
+                totalSpending += spending || 0;
+                if (category) categoryData[category] = (categoryData[category] || 0) + spending;
+
+                const newRow = document.createElement("tr");
+                newRow.innerHTML = `
+                    <td contenteditable="true">${date || ""}</td>
+                    <td contenteditable="true">${budget || 0}</td>
+                    <td contenteditable="true">${spending || 0}</td>
+                    <td contenteditable="true">${category || ""}</td>
+                    <td>${isOverBudget ? "超支" : "未超支"}</td>
+                    <td><button class="delete-btn">删除</button></td>
+                `;
+
+                newRow.querySelector(".delete-btn").addEventListener("click", () => {
+                    newRow.remove();
+                    updateStatistics();
+                });
+
+                dataTableBody.appendChild(newRow);
+            });
+
+            updateStatistics(totalBudget, totalSpending, categoryData);
+        };
+
+        // 更新统计信息和图表
+        const updateStatistics = (totalBudget = 0, totalSpending = 0, categoryData = {}) => {
+            totalBudgetEl.textContent = totalBudget.toFixed(2);
+            totalSpendingEl.textContent = totalSpending.toFixed(2);
+            overallStatusEl.textContent = totalSpending > totalBudget ? "超支" : "未超支";
+
+            if (spendingChart) spendingChart.destroy();
+            spendingChart = new Chart(spendingChartCtx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(categoryData),
+                    datasets: [{
+                        data: Object.values(categoryData),
+                        backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56']
+                    }]
+                }
+            });
+        };
+
+        // 导出修改后的数据
+        document.getElementById("exportData").addEventListener("click", () => {
+            const rows = Array.from(dataTableBody.children).map(row => {
+                return Array.from(row.children).slice(0, 4).map(cell => cell.textContent);
+            });
+            const worksheet = XLSX.utils.aoa_to_sheet([["日期", "预算", "实际支出", "类别"], ...rows]);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "数据表");
+            XLSX.writeFile(workbook, "支出数据.xlsx");
+        });
+    </script>
+</body>
+</html>
