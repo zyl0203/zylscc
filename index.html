@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -6,179 +5,197 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>全面理财助手</title>
     <style>
-        /* General Reset and Font Settings */
-        * {
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Arial', sans-serif;
-            line-height: 1.6;
-            background-color: #f5f5f5;
-            color: #333;
-            margin: 0;
         }
         header {
-            background: linear-gradient(90deg, #4CAF50, #3A9D23);
+            background-color: #4CAF50;
             color: white;
-            padding: 1.5em 0;
             text-align: center;
+            padding: 1em 0;
             font-size: 2em;
-            font-weight: bold;
-        }
-        nav {
-            display: flex;
-            justify-content: center;
-            background-color: #333;
-            padding: 10px 0;
-        }
-        nav a {
-            color: white;
-            margin: 0 15px;
-            text-decoration: none;
-            font-size: 1.2em;
-            transition: color 0.3s;
-        }
-        nav a:hover {
-            color: #4CAF50;
         }
         .container {
-            max-width: 1200px;
+            max-width: 600px;
             margin: 20px auto;
             padding: 20px;
-            background-color: white;
+            background: white;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        section {
-            margin-bottom: 30px;
-        }
-        section h2 {
-            font-size: 1.8em;
-            margin-bottom: 10px;
+        h2 {
+            text-align: center;
             color: #4CAF50;
         }
-        section p {
-            font-size: 1.1em;
-            line-height: 1.6;
+        form {
+            margin-bottom: 20px;
         }
-        .chart {
-            margin: 20px auto;
+        form div {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input, select {
             width: 100%;
-            max-width: 600px;
-            text-align: center;
+            padding: 8px;
+            font-size: 1em;
+            border: 1px solid #ccc;
+            border-radius: 4px;
         }
-        footer {
-            text-align: center;
-            padding: 15px;
-            background-color: #333;
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
             color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 20px;
         }
-        footer a {
-            color: #4CAF50;
-            text-decoration: none;
+        table, th, td {
+            border: 1px solid #ddd;
         }
-        footer a:hover {
-            text-decoration: underline;
+        th, td {
+            text-align: center;
+            padding: 8px;
         }
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            nav a {
-                font-size: 1em;
-                margin: 0 10px;
-            }
-            .container {
-                padding: 15px;
-            }
-            section h2 {
-                font-size: 1.5em;
-            }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .delete-btn:hover {
+            background-color: #d32f2f;
+        }
+        .no-data {
+            text-align: center;
+            margin-top: 10px;
+            font-style: italic;
+            color: #777;
         }
     </style>
 </head>
 <body>
     <header>全面理财助手</header>
-    <nav>
-        <a href="#accounts">账户管理</a>
-        <a href="#income-expense">收支管理</a>
-        <a href="#budget">预算管理</a>
-        <a href="#analysis">财务分析</a>
-        <a href="#savings">储蓄目标</a>
-        <a href="#loans">贷款管理</a>
-    </nav>
     <div class="container">
-        <section id="accounts">
-            <h2>账户管理</h2>
-            <p>实时管理所有账户余额，轻松分类查看。</p>
-        </section>
-        <section id="income-expense">
-            <h2>收入与支出管理</h2>
-            <p>记录收入与支出，自动分类，掌握每一笔财务动向。</p>
-        </section>
-        <section id="budget">
-            <h2>预算管理</h2>
-            <p>为各类支出设置预算，智能提醒避免超支。</p>
-        </section>
-        <section id="analysis">
-            <h2>财务分析</h2>
-            <p>通过可视化图表深入分析财务数据，轻松发现问题。</p>
-            <div class="chart">
-                <canvas id="financeChart"></canvas>
+        <h2>添加支出记录</h2>
+        <form id="expenseForm">
+            <div>
+                <label for="amount">支出金额：</label>
+                <input type="number" id="amount" placeholder="请输入金额" required>
             </div>
-        </section>
-        <section id="savings">
-            <h2>储蓄目标</h2>
-            <p>设定储蓄目标并实时跟踪进度，帮助实现财务自由。</p>
-        </section>
-        <section id="loans">
-            <h2>贷款管理</h2>
-            <p>管理贷款信息，及时提醒还款，避免逾期。</p>
-        </section>
+            <div>
+                <label for="category">支出类别：</label>
+                <select id="category" required>
+                    <option value="餐饮">餐饮</option>
+                    <option value="交通">交通</option>
+                    <option value="购物">购物</option>
+                    <option value="娱乐">娱乐</option>
+                    <option value="其他">其他</option>
+                </select>
+            </div>
+            <div>
+                <label for="date">日期：</label>
+                <input type="date" id="date" required>
+            </div>
+            <button type="submit">添加记录</button>
+        </form>
+
+        <h2>支出记录</h2>
+        <table id="expenseTable">
+            <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>类别</th>
+                    <th>金额</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="expenseTableBody">
+                <tr id="noDataRow">
+                    <td colspan="4" class="no-data">暂无记录</td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    <footer>
-        © 2025 全面理财助手 | <a href="#top">返回顶部</a>
-    </footer>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
-        // Finance Chart Example
-        const ctx = document.getElementById('financeChart').getContext('2d');
-        const financeChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['收入', '支出', '储蓄', '贷款'],
-                datasets: [{
-                    label: '财务数据',
-                    data: [12000, 8000, 4000, 2000],
-                    backgroundColor: [
-                        'rgba(75, 192, 192, 0.6)',
-                        'rgba(255, 99, 132, 0.6)',
-                        'rgba(255, 206, 86, 0.6)',
-                        'rgba(153, 102, 255, 0.6)'
-                    ],
-                    borderColor: [
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(153, 102, 255, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    title: {
-                        display: true,
-                        text: '财务数据图表'
-                    }
+        const expenseForm = document.getElementById("expenseForm");
+        const expenseTableBody = document.getElementById("expenseTableBody");
+        const noDataRow = document.getElementById("noDataRow");
+
+        // Load existing records from localStorage
+        const loadExpenses = () => {
+            const expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+            expenses.forEach(expense => addExpenseToTable(expense));
+        };
+
+        // Save expenses to localStorage
+        const saveExpenses = () => {
+            const rows = Array.from(expenseTableBody.children).map(row => ({
+                date: row.children[0].textContent,
+                category: row.children[1].textContent,
+                amount: row.children[2].textContent.replace(" 元", "")
+            }));
+            localStorage.setItem("expenses", JSON.stringify(rows));
+        };
+
+        // Add a new expense to the table
+        const addExpenseToTable = ({ date, category, amount }) => {
+            const newRow = document.createElement("tr");
+            newRow.innerHTML = `
+                <td>${date}</td>
+                <td>${category}</td>
+                <td>${parseFloat(amount).toFixed(2)} 元</td>
+                <td><button class="delete-btn">删除</button></td>
+            `;
+            newRow.querySelector(".delete-btn").addEventListener("click", () => {
+                newRow.remove();
+                if (!expenseTableBody.children.length) {
+                    expenseTableBody.appendChild(noDataRow);
                 }
-            },
+                saveExpenses();
+            });
+            if (noDataRow) noDataRow.remove();
+            expenseTableBody.appendChild(newRow);
+            saveExpenses();
+        };
+
+        // Handle form submission
+        expenseForm.addEventListener("submit", event => {
+            event.preventDefault();
+            const expense = {
+                date: document.getElementById("date").value,
+                category: document.getElementById("category").value,
+                amount: document.getElementById("amount").value
+            };
+            addExpenseToTable(expense);
+            expenseForm.reset();
         });
+
+        // Initialize table with stored data
+        loadExpenses();
     </script>
 </body>
 </html>
