@@ -252,69 +252,6 @@
         saveExpenses();
     };
 </script>
-.getElementById("budgetForm");
-    const budgetTableBody = document.getElementById("budgetTableBody");
-    const noBudgetDataRow = document.getElementById("noBudgetDataRow");
-
-    let currentBudget = 0; // 保存当前预算
-    let nextDayBudget = 0; // 保存下一日预算
-
-    // 处理预算表单提交
-    budgetForm.addEventListener("submit", event => {
-        event.preventDefault();
-
-        const todayBudget = parseFloat(document.getElementById("todayBudget").value);
-        const todayDate = new Date().toISOString().split("T")[0];
-        const todayExpenses = calculateTodayExpenses(todayDate);
-
-        currentBudget = todayBudget;
-        nextDayBudget = todayBudget - todayExpenses;
-
-        addBudgetToTable(todayDate, todayBudget, todayExpenses, nextDayBudget);
-        budgetForm.reset();
-    });
-
-    // 计算当天实际支出
-    const calculateTodayExpenses = date => {
-        let total = 0;
-        Array.from(expenseTableBody.children).forEach(row => {
-            if (row.children[0].textContent === date) {
-                total += parseFloat(row.children[2].textContent.replace(" 元", ""));
-            }
-        });
-        return total;
-    };
-
-    // 将预算记录添加到表格
-    const addBudgetToTable = (date, budget, expenses, nextBudget) => {
-        const newRow = document.createElement("tr");
-        newRow.innerHTML = `
-            <td>${date}</td>
-            <td>${budget.toFixed(2)} 元</td>
-            <td>${expenses.toFixed(2)} 元</td>
-            <td>${nextBudget.toFixed(2)} 元</td>
-        `;
-        if (noBudgetDataRow) noBudgetDataRow.remove();
-        budgetTableBody.appendChild(newRow);
-    };
-
-    // 动态更新支出表格时同步预算表格
-    const updateBudgetTable = () => {
-        const todayDate = new Date().toISOString().split("T")[0];
-        const todayExpenses = calculateTodayExpenses(todayDate);
-        const rows = Array.from(budgetTableBody.children);
-        rows.forEach(row => {
-            if (row.children[0].textContent === todayDate) {
-                row.children[2].textContent = `${todayExpenses.toFixed(2)} 元`;
-                nextDayBudget = currentBudget - todayExpenses;
-                row.children[3].textContent = `${nextDayBudget.toFixed(2)} 元`;
-            }
-        });
-    };
-
-    // 添加监听器，确保每次支出表格更新后更新预算表格
-    expenseTableBody.addEventListener("DOMNodeInserted", updateBudgetTable);
-    expenseTableBody.addEventListener("DOMNodeRemoved", updateBudgetTable);
 </script>
 <div class="container">
     <h2>每日预算管理</h2>
