@@ -199,3 +199,56 @@
     </script>
 </body>
 </html>
+<div class="container">
+    <h2>上传 Excel 文件</h2>
+    <input type="file" id="excelFile" accept=".xlsx">
+</div>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script>
+    const excelFileInput = document.getElementById('excelFile');
+
+    // 监听文件上传
+    excelFileInput.addEventListener('change', event => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = e => {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+
+            // 获取第一个工作表
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+            // 处理数据并插入表格
+            rows.slice(1).forEach(row => {
+                const [date, category, amount] = row;
+                if (new Date(date) >= new Date()) {
+                    addExpenseToTable({ date, category, amount });
+                }
+            });
+        };
+        reader.readAsArrayBuffer(file);
+    });
+
+    // 表格中插入数据
+    const addExpenseToTable = ({ date, category, amount }) => {
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td>${date}</td>
+            <td>${category || '未分类'}</td>
+            <td>${parseFloat(amount).toFixed(2)} 元</td>
+            <td><button class="delete-btn">删除</button></td>
+        `;
+        newRow.querySelector('.delete-btn').addEventListener('click', () => {
+            newRow.remove();
+            if (!expenseTableBody.children.length) {
+                expenseTableBody.appendChild(noDataRow);
+            }
+        });
+        if (noDataRow) noDataRow.remove();
+        expenseTableBody.appendChild(newRow);
+        saveExpenses();
+    };
+</script>
