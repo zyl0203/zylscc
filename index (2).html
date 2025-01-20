@@ -1,0 +1,176 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日预算与支出管理</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2, h3 {
+            color: #333;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .no-data {
+            text-align: center;
+            color: #aaa;
+        }
+        input[type="file"], button {
+            margin: 10px auto;
+            display: block;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="file"] {
+            background-color: #007bff;
+            color: #fff;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>每日预算与支出管理</h2>
+        <p>从今天开始日期：<strong id="startDate"></strong></p>
+
+        <table id="dailyBudgetTable">
+            <thead>
+                <tr>
+                    <th>日期</th>
+                    <th>每日预算 (元)</th>
+                    <th>每日实际支出 (元)</th>
+                    <th>状态</th>
+                </tr>
+            </thead>
+            <tbody id="dailyBudgetTableBody"></tbody>
+        </table>
+
+        <h3>支出分布图</h3>
+        <canvas id="spendingChart" width="400" height="200"></canvas>
+    </div>
+
+    <script>
+        const dailyBudgetTableBody = document.getElementById("dailyBudgetTableBody");
+        const startDateElement = document.getElementById("startDate");
+        const spendingChartCtx = document.getElementById("spendingChart").getContext("2d");
+        let spendingChart;
+
+        // 设置从今天开始的日期
+        const startDate = new Date();
+        startDateElement.textContent = startDate.toISOString().split("T")[0];
+
+        // 生成每日预算和支出数据
+        const generateDailyData = (days = 30, dailyBudget = 100) => {
+            const rows = [];
+            for (let i = 0; i < days; i++) {
+                const currentDate = new Date(startDate);
+                currentDate.setDate(startDate.getDate() + i);
+                const formattedDate = currentDate.toISOString().split("T")[0];
+
+                const actualSpending = Math.random() * dailyBudget; // 模拟每日实际支出
+                const isOverBudget = actualSpending > dailyBudget;
+
+                rows.push({
+                    date: formattedDate,
+                    budget: dailyBudget.toFixed(2),
+                    actual: actualSpending.toFixed(2),
+                    status: isOverBudget ? "超支" : "未超支",
+                });
+            }
+            return rows;
+        };
+
+        // 填充表格
+        const populateTable = (rows) => {
+            rows.forEach(row => {
+                const newRow = document.createElement("tr");
+                newRow.innerHTML = `
+                    <td>${row.date}</td>
+                    <td>${row.budget}</td>
+                    <td>${row.actual}</td>
+                    <td>${row.status}</td>
+                `;
+                dailyBudgetTableBody.appendChild(newRow);
+            });
+
+            updateChart(rows);
+        };
+
+        // 更新图表
+        const updateChart = (rows) => {
+            const labels = rows.map(row => row.date);
+            const spendingData = rows.map(row => parseFloat(row.actual));
+
+            if (spendingChart) spendingChart.destroy();
+
+            spendingChart = new Chart(spendingChartCtx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: '每日实际支出',
+                        data: spendingData,
+                        borderColor: '#36a2eb',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderWidth: 1,
+                        fill: true,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: true },
+                    },
+                    scales: {
+                        x: { title: { display: true, text: '日期' } },
+                        y: { title: { display: true, text: '支出 (元)' } },
+                    }
+                }
+            });
+        };
+
+        // 初始化数据
+        const dailyData = generateDailyData();
+        populateTable(dailyData);
+    </script>
+</body>
+</html>
